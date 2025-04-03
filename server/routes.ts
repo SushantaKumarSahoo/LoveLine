@@ -83,11 +83,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Waiting for call ${callSid} to initiate before canceling...`);
           await new Promise(resolve => setTimeout(resolve, 2000));
           
+          // Default status values
+          let phoneAvailable = true;  // Assume available by default
+          let callMessage = "Verification call successfully placed and automatically ended. Their phone is active - they can't claim it's off or unavailable.";
+          
           // Check call status and force hang-up if needed
           try {
             // Fetch the call to get current status
             const callStatus = await twilioClient.calls(callSid).fetch();
             console.log(`Call ${callSid} current status: ${callStatus.status}`);
+            
+            // Check the status to determine if phone is busy
+            if (callStatus.status === 'busy') {
+              console.log(`Phone number ${formattedPhoneNumber} is busy on another call`);
+              phoneAvailable = false;
+              callMessage = "This phone is currently busy on another call. They may be talking to someone else right now.";
+            } else if (callStatus.status === 'failed' || callStatus.status === 'no-answer') {
+              console.log(`Phone number ${formattedPhoneNumber} could not be reached`);
+              phoneAvailable = false;
+              callMessage = "The call couldn't complete. The number might be off, disconnected, or not accepting calls.";
+            }
             
             // If call is still ringing or in-progress, cancel it
             if (['queued', 'ringing', 'in-progress'].includes(callStatus.status)) {
@@ -105,9 +120,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error("Error checking call status:", statusErr);
           }
           
-          // If we successfully initiated a call, let's determine if the number is available
-          const isAvailable = true; // If we can call it, it's available
-          
           // Create a record of this check
           const newPhoneCheck = await storage.createPhoneCheck({
             phoneNumber: formattedPhoneNumber,
@@ -115,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             countryIso2,
             carrier,
             lineType,
-            isAvailable,
+            isAvailable: phoneAvailable,
             rawResponse: responseData
           });
 
@@ -124,16 +136,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             phoneNumber: formattedPhoneNumber,
             carrier,
             lineType,
-            isAvailable,
+            isAvailable: phoneAvailable,
             callMade: true,
-            message: "Verification call successfully placed and automatically ended. Their phone is active - they can't claim it's off or unavailable."
+            message: callMessage
           });
           
         } catch (callError: any) {
           console.error("Twilio call error:", callError);
           
-          // If the call failed, the phone might be busy, disconnected or unavailable
-          const isAvailable = false;
+          // Default error response values
+          let phoneAvailable = false;
+          let callMessage = "The call couldn't be placed. The number might be off, disconnected, or not accepting calls.";
+          let callMadeSuccessfully = false;
+          
+          // Check for busy signal or call in progress errors
+          if (callError.code === 31201 || // Busy signal 
+              callError.code === 31203 || // All circuits busy
+              callError.code === 31208 || // Call in progress 
+              callError.message?.includes('busy') || // Message contains busy
+              callError.message?.includes('BUSY') || // Message contains BUSY
+              callError.message?.includes('in use') || // Message contains in use
+              callError.message?.includes('IN USE')) { // Message contains IN USE
+            console.log(`Phone is busy (Error details): ${formattedPhoneNumber}`);
+            console.log(`Error code: ${callError.code}, Message: ${callError.message}`);
+            callMessage = "This phone is currently busy on another call. They may be talking to someone else right now.";
+            callMadeSuccessfully = true; // We did reach the phone, but it was busy
+          }
           
           // Create a record of this check anyway
           const newPhoneCheck = await storage.createPhoneCheck({
@@ -142,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             countryIso2,
             carrier,
             lineType,
-            isAvailable,
+            isAvailable: phoneAvailable,
             rawResponse: responseData
           });
           
@@ -151,9 +179,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             phoneNumber: formattedPhoneNumber,
             carrier,
             lineType,
-            isAvailable,
-            callMade: false,
-            message: "The call couldn't be placed. The number might be off, disconnected, or not accepting calls."
+            isAvailable: phoneAvailable,
+            callMade: callMadeSuccessfully,
+            message: callMessage
           });
         }
         
