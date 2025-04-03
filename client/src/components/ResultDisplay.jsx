@@ -37,7 +37,10 @@ const ResultDisplay = ({ result, loading, error }) => {
               We're calling the number right now. The call will verify if their phone is active and online, exposing any lies about it being "off" or "unavailable".
             </p>
             <div className="mt-3 p-2 rounded-md bg-blue-50 border border-blue-100 text-xs text-blue-700 max-w-sm text-center">
-              Don't worry - the call will automatically end after 1 second. They'll see a missed call but won't have time to answer. Results will appear here soon.
+              The call will ring for a few seconds and then automatically end. They may see a missed call from your Twilio number. Results will appear here shortly.
+            </div>
+            <div className="mt-3 p-2 rounded-md bg-amber-50 border border-amber-100 text-xs text-amber-700 max-w-sm text-center">
+              <strong>Important:</strong> With Twilio trial accounts, the call will only be placed to verified numbers. If you don't receive a call, please verify your number on the Twilio dashboard.
             </div>
           </div>
         )}

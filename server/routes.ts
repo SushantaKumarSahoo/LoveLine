@@ -72,16 +72,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             from: process.env.TWILIO_PHONE_NUMBER || '+15005550006', // Use the test number if none is provided
             // Using TwiML to immediately hang up when connected
             twiml: `<Response><Hangup/></Response>`, // Hangup as soon as connected
-            // Set a short timeout - call should not ring for more than 5 seconds
-            timeout: 5,
+            // Set a longer timeout to allow the call to be received
+            timeout: 20,
           });
           
           // Get the call SID to track status
           const callSid = call.sid;
           
-          // Wait for 2 seconds to let the call initiate and then cancel
-          console.log(`Waiting for call ${callSid} to initiate before canceling...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Wait for 10 seconds to let the call ring long enough to be received
+          console.log(`Waiting for call ${callSid} to ring for 10 seconds before canceling...`);
+          await new Promise(resolve => setTimeout(resolve, 10000));
           
           // Default status values
           let phoneAvailable = true;  // Assume available by default
