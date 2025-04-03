@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, Search } from "lucide-react";
 import { countries } from "@/lib/countries";
 
@@ -69,7 +68,7 @@ const CountrySelector = ({ value, onChange }) => {
               />
             </div>
           </div>
-          <ScrollArea className="max-h-60">
+          <div className="max-h-60 overflow-y-auto custom-scrollbar">
             <div className="py-1">
               {filteredCountries.map((country) => (
                 <div 
@@ -94,7 +93,7 @@ const CountrySelector = ({ value, onChange }) => {
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
         </div>
       )}
     </div>
