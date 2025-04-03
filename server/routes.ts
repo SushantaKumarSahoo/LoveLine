@@ -149,6 +149,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let callMessage = "The call couldn't be placed. The number might be off, disconnected, or not accepting calls.";
           let callMadeSuccessfully = false;
           
+          // Check for Twilio trial account limitations
+          if (callError.code === 21219 || callError.message?.includes('unverified')) {
+            callMessage = "The number is unverified. Trial accounts may only make calls to verified numbers.";
+          }
+          
           // Check for busy signal or call in progress errors
           if (callError.code === 31201 || // Busy signal 
               callError.code === 31203 || // All circuits busy

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, AlertTriangle } from "lucide-react";
+import { Shield, AlertTriangle, Phone } from "lucide-react";
 
 const Home = () => {
   const [phoneResult, setPhoneResult] = useState(null);
@@ -53,6 +53,14 @@ const Home = () => {
               <p className="text-xs text-amber-700">
                 This tool is for informational purposes only. A busy phone status doesn't necessarily indicate cheating.
                 Please use this information responsibly.
+              </p>
+            </div>
+            
+            <div className="flex items-center mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <Phone className="text-blue-500 h-5 w-5 mr-2 flex-shrink-0" />
+              <p className="text-xs text-blue-700">
+                <strong>Twilio Trial Account Notice:</strong> Currently this app can only make verification calls to verified phone numbers 
+                registered with your Twilio account. To test functionality, add verified numbers in your Twilio dashboard.
               </p>
             </div>
           </div>

@@ -123,7 +123,9 @@ const ResultDisplay = ({ result, loading, error }) => {
                         <p className="text-sm font-medium">
                           {result.callMade 
                             ? "Verification Call Successfully Placed" 
-                            : "Verification Call Failed"}
+                            : result.message.includes("unverified") 
+                              ? "Trial Account Limitation: Can only call verified numbers"
+                              : "Verification Call Failed"}
                         </p>
                       </div>
                     </div>
