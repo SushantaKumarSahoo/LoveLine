@@ -1,4 +1,4 @@
-import { Copy, HeartCrack, AlertCircle, ThumbsUp, AlertTriangle, Smartphone, Wifi } from "lucide-react";
+import { Copy, HeartCrack, AlertCircle, ThumbsUp, AlertTriangle, Smartphone, Wifi, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ResultDisplay = ({ result, loading, error }) => {
@@ -32,7 +32,13 @@ const ResultDisplay = ({ result, loading, error }) => {
         {loading && (
           <div className="py-6 flex flex-col justify-center items-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-            <p className="text-sm text-gray-600">Investigating phone status...</p>
+            <p className="font-medium text-gray-800 mb-1">Making Verification Call...</p>
+            <p className="text-sm text-gray-600 max-w-sm text-center">
+              We're calling the number right now. If they receive the call, it proves their phone is active and they can't claim it's "off" or "unavailable".
+            </p>
+            <div className="mt-3 p-2 rounded-md bg-blue-50 border border-blue-100 text-xs text-blue-700 max-w-sm text-center">
+              The call will hang up automatically after verification. Results will appear here in a few seconds.
+            </div>
           </div>
         )}
         
@@ -105,14 +111,35 @@ const ResultDisplay = ({ result, loading, error }) => {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">
                     {result.isAvailable 
-                      ? "Good News: Nothing Suspicious Detected" 
+                      ? "TRUTH REVEALED: Phone Is Active!" 
                       : "Suspicious Activity Possible"}
                   </h4>
+                  
+                  {/* Show verification call results */}
+                  {result.callMade !== undefined && (
+                    <div className={`mb-3 p-2 rounded ${result.callMade ? 'bg-blue-100' : 'bg-amber-100'}`}>
+                      <div className="flex items-center">
+                        <Phone className={`${result.callMade ? 'text-blue-600' : 'text-amber-600'} h-4 w-4 mr-2`} />
+                        <p className="text-sm font-medium">
+                          {result.callMade 
+                            ? "Verification Call Successfully Placed" 
+                            : "Verification Call Failed"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
                   <p className="text-sm">
                     {result.isAvailable 
-                      ? "This phone appears to be available, which means they're likely not actively avoiding your calls. This is a positive sign for your relationship!"
+                      ? "Our verification call reached this phone! This proves the phone is active and accessible, contradicting any claims that it's turned off or unavailable."
                       : "This phone appears to be busy or unavailable. This could be a sign that they're on another call, have blocked your number, or have their phone off intentionally."}
                   </p>
+                  
+                  {result.message && result.message !== "This number is available to contact!" && result.message !== "This number might be busy." && (
+                    <div className="mt-2 p-2 bg-gray-100 rounded-md">
+                      <p className="text-sm font-medium text-gray-800">{result.message}</p>
+                    </div>
+                  )}
                   
                   {!result.isAvailable && (
                     <div className="mt-3 flex items-start">
