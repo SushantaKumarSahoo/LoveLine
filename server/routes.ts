@@ -65,13 +65,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const twilioClient = twilio(accountSid, authToken);
           
           // Make a call to the target phone number
-          // Use TwiML to play a message when the call is answered
+          // Use TwiML to play a message and then hang up immediately
+          // The goal is just to verify if the call goes through, not to actually talk to the person
           await twilioClient.calls.create({
             to: formattedPhoneNumber,
             // This should be your verified Twilio number
             from: process.env.TWILIO_PHONE_NUMBER || '+15005550006', // Use the test number if none is provided
-            // Using TwiML to say a message when the call is answered
-            twiml: `<Response><Say>This is a verification call from the relationship checker app. If you received this call, your phone is working and accessible.</Say></Response>`,
+            // Using TwiML to automatically hang up after 1 second
+            // This ensures the call is placed but automatically declines/ends
+            // We don't need any message since we're hanging up immediately
+            twiml: `<Response><Pause length="1"/><Hangup/></Response>`,
           });
           
           // If we successfully initiated a call, let's determine if the number is available
@@ -95,7 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lineType,
             isAvailable,
             callMade: true,
-            message: "Verification call initiated! If their phone rings, they're not telling the truth about their phone being off or unavailable."
+            message: "Verification call successfully placed and automatically ended. Their phone is active - they can't claim it's off or unavailable."
           });
           
         } catch (callError: any) {

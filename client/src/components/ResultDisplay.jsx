@@ -34,10 +34,10 @@ const ResultDisplay = ({ result, loading, error }) => {
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
             <p className="font-medium text-gray-800 mb-1">Making Verification Call...</p>
             <p className="text-sm text-gray-600 max-w-sm text-center">
-              We're calling the number right now. If they receive the call, it proves their phone is active and they can't claim it's "off" or "unavailable".
+              We're calling the number right now. The call will verify if their phone is active and online, exposing any lies about it being "off" or "unavailable".
             </p>
             <div className="mt-3 p-2 rounded-md bg-blue-50 border border-blue-100 text-xs text-blue-700 max-w-sm text-center">
-              The call will hang up automatically after verification. Results will appear here in a few seconds.
+              Don't worry - the call will automatically end after 1 second. They'll see a missed call but won't have time to answer. Results will appear here soon.
             </div>
           </div>
         )}
