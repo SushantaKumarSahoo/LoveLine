@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Search, HeartCrack } from "lucide-react";
 import CountrySelector from "./CountrySelector";
 import PhoneInput from "./PhoneInput";
 import { useState } from "react";
@@ -48,8 +48,9 @@ const PhoneForm = ({ onSubmit, loading }) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-2">
-          <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
-            Enter phone number to check
+          <FormLabel className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+            <HeartCrack className="h-4 w-4 mr-1 text-primary" />
+            <span>Enter your partner's phone number</span>
           </FormLabel>
           
           <FormField
@@ -93,8 +94,8 @@ const PhoneForm = ({ onSubmit, loading }) => {
           className="w-full py-6 bg-gradient-to-r from-primary to-[#F27121] hover:opacity-90 transition shadow-md"
           disabled={loading}
         >
-          <span>{loading ? "Checking..." : "Check Availability"}</span>
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <span>{loading ? "Checking..." : "Reveal The Truth"}</span>
+          <Search className="ml-2 h-4 w-4" />
         </Button>
       </form>
     </Form>
