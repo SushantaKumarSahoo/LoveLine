@@ -65,17 +65,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const twilioClient = twilio(accountSid, authToken);
           
           // Make a call to the target phone number
-          // Use TwiML to play a message and then hang up immediately
-          // The goal is just to verify if the call goes through, not to actually talk to the person
-          await twilioClient.calls.create({
+          // We need to make sure the call is completed before sending the response
+          const call = await twilioClient.calls.create({
             to: formattedPhoneNumber,
             // This should be your verified Twilio number
             from: process.env.TWILIO_PHONE_NUMBER || '+15005550006', // Use the test number if none is provided
-            // Using TwiML to automatically hang up after 1 second
-            // This ensures the call is placed but automatically declines/ends
-            // We don't need any message since we're hanging up immediately
-            twiml: `<Response><Pause length="1"/><Hangup/></Response>`,
+            // Using TwiML to immediately hang up when connected
+            twiml: `<Response><Hangup/></Response>`, // Hangup as soon as connected
+            // Set a short timeout - call should not ring for more than 5 seconds
+            timeout: 5,
           });
+          
+          // Get the call SID to track status
+          const callSid = call.sid;
+          
+          // Wait for 2 seconds to let the call initiate and then cancel
+          console.log(`Waiting for call ${callSid} to initiate before canceling...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Check call status and force hang-up if needed
+          try {
+            // Fetch the call to get current status
+            const callStatus = await twilioClient.calls(callSid).fetch();
+            console.log(`Call ${callSid} current status: ${callStatus.status}`);
+            
+            // If call is still ringing or in-progress, cancel it
+            if (['queued', 'ringing', 'in-progress'].includes(callStatus.status)) {
+              console.log(`Canceling call ${callSid} with status: ${callStatus.status}`);
+              await twilioClient.calls(callSid).update({status: 'completed'});
+              console.log(`Forced call ${callSid} to end with status: completed`);
+              
+              // Log final status after cancellation
+              const finalStatus = await twilioClient.calls(callSid).fetch();
+              console.log(`Call ${callSid} final status after cancellation: ${finalStatus.status}`);
+            } else {
+              console.log(`No need to cancel call ${callSid} - status already: ${callStatus.status}`);
+            }
+          } catch (statusErr) {
+            console.error("Error checking call status:", statusErr);
+          }
           
           // If we successfully initiated a call, let's determine if the number is available
           const isAvailable = true; // If we can call it, it's available
